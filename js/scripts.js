@@ -1,18 +1,44 @@
 $(function(){
  let Game=(function(){
-		const game = $(".gameContainer");		
-		const memoryCards= $(".card");
-		
+		const game = $(".game");
+		const restartButton = $("button.restart");
+		let paused = false;
+		let guess = null;
 
-		
+		function win(){
+			alert("Game is over");
+		}
+
+		function cardClicked(elem){
+			var $card = $(elem);
+			if(!paused && !$card.find(".inside").hasClass("matched") && !$card.find(".inside").hasClass("picked")){
+				$card.find(".inside").addClass("picked");
+				if(!guess){
+					guess = $card.attr("data-id");
+				} else if(guess == $card.attr("data-id") && !$card.hasClass("picked")){
+					$(".picked").addClass("matched");
+					guess = null;
+				} else {
+					guess = null;
+					paused = true;
+					setTimeout(function(){
+						$(".picked").removeClass("picked");
+						paused = false;
+					}, 600);
+				}
+				if($(".matched").length == $(".card").length){
+					win();
+				}
+			}
+		}
 
 		function renderElements(cards){
 			var deck = '';
-			cards.forEach(function(key, value){
+			$.each(cards,function(key, value){
 				deck += '<div class="card" data-id="'+ value.id +'"><div class="inside">\
-				<div class="foreground"><img src="'+ value.img +'"\
+				<div class="front"><img src="'+ value.img +'"\
 				alt="'+ value.name +'" /></div>\
-				<div class="background"><img src="./img/supercharge.png"\
+				<div class="back"><img src="./img/supercharge.png"\
 				alt="supercharge" /></div></div>\
 				</div>';
 			});
@@ -21,7 +47,10 @@ $(function(){
 
 	  function setup(cards){
 		 game.html(renderElements(cards));
-		 
+		 $(document).on("click",".card",function(){
+			 cardClicked(this);
+		 });
+
 	 }
 
 	 function shuffleCards(arr) {
@@ -41,14 +70,14 @@ $(function(){
 	function deployGame(cards){
 		 const cardsArray = $.merge(cards, cards);
 		 let randomDeck = shuffleCards(cardsArray);
-		setup(randomDeck);
+		 setup(randomDeck);
 	 }
-	 var init =function(cards){
+	 var init = function(cards){
 		 deployGame(cards);
 	 }
 
 	 return{
-     init:init 
+     init:init
    }
  })();
 
